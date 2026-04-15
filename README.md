@@ -60,4 +60,8 @@ Use these credentials only for local/demo usage and change them for production s
 ## License
 
 This project is currently shared without an explicit license.
+<<<<<<< HEAD
 Add a license file (for example, MIT) if you plan to make it publicly reusable.
+=======
+Add a license file (for example, MIT) if you plan to make it publicly reusable.
+>>>>>>> 258ae6e ( 2  push)
