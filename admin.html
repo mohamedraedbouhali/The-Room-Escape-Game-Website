@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - The Room</title>
+  <link rel="icon" type="image/webp" href="img/loc.webp" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #07080d;
+      --panel: #10131d;
+      --panel-2: #161b28;
+      --line: rgba(255,255,255,.1);
+      --text: #f4f7ff;
+      --muted: #9da8bc;
+      --accent: #dc2626;
+      --accent-2: #f87171;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --sidebar-w: 260px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 520px at 6% -8%, rgba(220,38,38,.2), transparent 52%),
+        radial-gradient(700px 420px at 100% 0%, rgba(248,113,113,.12), transparent 45%),
+        var(--bg);
+    }
+
+    .auth-shell, .app-shell { width: min(1260px, 96vw); margin: 0 auto; }
+    .auth-shell { padding: 2rem 0; }
+
+    .auth-card {
+      width: min(460px, 100%);
+      margin: 9vh auto 0;
+      background: linear-gradient(180deg, rgba(16,19,29,.96), rgba(16,19,29,.84));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+    .eyebrow {
+      color: var(--accent-2);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: .74rem;
+      font-weight: 700;
+      margin-bottom: .6rem;
+    }
+    .title { font-size: clamp(1.75rem, 4vw, 2.3rem); margin-bottom: .45rem; }
+    .sub { color: var(--muted); line-height: 1.5; margin-bottom: 1.1rem; }
+
+    .field { margin-bottom: .85rem; }
+    .field label {
+      display: block;
+      margin-bottom: .35rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .74rem;
+      font-weight: 700;
+    }
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: .72rem .8rem;
+      outline: none;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(220,38,38,.2);
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      padding: .68rem .92rem;
+      cursor: pointer;
+      transition: transform .15s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); background: #ef4444; }
+    .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
+    .btn.ghost:hover { background: rgba(255,255,255,.05); }
+    .btn.danger { background: rgba(239,68,68,.14); color: #fecaca; border-color: rgba(239,68,68,.35); }
+    .btn.small { font-size: .78rem; padding: .36rem .55rem; border-radius: 8px; }
+
+    .error { margin-top: .55rem; min-height: 1.1rem; color: #fecaca; font-size: .9rem; }
+    .auth-help { margin-top: .7rem; color: var(--muted); font-size: .86rem; }
+
+    .app-shell { display: none; padding: 1rem 0 1.4rem; }
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: .9rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .85rem;
+      background: linear-gradient(180deg, rgba(16,19,29,.95), rgba(16,19,29,.8));
+      max-height: calc(100vh - 1.8rem);
+      overflow: auto;
+    }
+    .brand { font-size: 1.05rem; font-weight: 800; letter-spacing: .04em; margin-bottom: .7rem; }
+    .sidebar .eyebrow { margin-bottom: .3rem; }
+
+    .menu {
+      display: grid;
+      gap: .45rem;
+      margin: .8rem 0;
+    }
+    .menu button {
+      text-align: left;
+      background: rgba(255,255,255,.02);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 10px;
+      padding: .55rem .6rem;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .menu button.active { border-color: rgba(220,38,38,.6); background: rgba(220,38,38,.16); }
+
+    .sidebar-actions { display: grid; gap: .45rem; }
+    .hint { color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
+    .content {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: linear-gradient(180deg, rgba(16,19,29,.94), rgba(16,19,29,.82));
+      min-height: calc(100vh - 1.8rem);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .6rem;
+      flex-wrap: wrap;
+      margin-bottom: .9rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .65rem;
+      margin-bottom: 1rem;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .6rem;
+      background: rgba(255,255,255,.02);
+    }
+    .stat .k { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; }
+    .stat .v { margin-top: .2rem; font-size: 1.15rem; font-weight: 800; }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: .85rem;
+      background: rgba(255,255,255,.01);
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: auto;
+      max-height: 62vh;
+      background: rgba(255,255,255,.01);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+    th, td {
+      padding: .5rem .55rem;
+      border-bottom: 1px solid var(--line);
+      font-size: .85rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #121725;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .7rem;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: .12rem .45rem;
+      font-size: .74rem;
+      border: 1px solid rgba(16,185,129,.35);
+      color: #86efac;
+      background: rgba(16,185,129,.12);
+      white-space: nowrap;
+    }
+
+    .manifest-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .55rem;
+    }
+    .manifest-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .65rem;
+      background: rgba(255,255,255,.02);
+      display: grid;
+      gap: .3rem;
+    }
+    .manifest-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .manifest-meta { color: var(--muted); font-size: .84rem; }
+
+    .waiver-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .6rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .55rem;
+      background: rgba(255,255,255,.02);
+      margin-bottom: .45rem;
+    }
+
+    .kpi-grid {
+      display: grid;
+      gap: .6rem;
+      grid-template-columns: repeat(2, 1fr);
+      margin-bottom: .8rem;
+    }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .7rem;
+      background: rgba(255,255,255,.02);
+    }
+    .kpi h4 { margin-bottom: .35rem; font-size: .9rem; }
+    .kpi p { color: var(--muted); font-size: .84rem; }
+
+    .admin-list {
+      list-style: none;
+      margin: .65rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: .45rem;
+    }
+    .admin-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.02);
+      padding: .5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+      font-size: .9rem;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: .9rem;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; max-height: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .kpi-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="auth-shell" id="auth-shell">
+    <article class="auth-card">
+      <div class="eyebrow">Admin Access</div>
+      <h1 class="title">The Room Ops Dashboard</h1>
+      <p class="sub">Sign in to manage reservations, admins, waivers, metrics, and reports.</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" />
+        </div>
+        <button class="btn" type="submit">Sign In</button>
+        <p class="auth-help">Default admin: <strong>admin@gmail.com</strong> / <strong>admin</strong></p>
+        <p class="error" id="login-error"></p>
+      </form>
+    </article>
+  </section>
+
+  <section class="app-shell" id="app-shell">
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="eyebrow">Navigation</div>
+        <div class="brand">The Room Admin</div>
+        <div class="menu" id="side-menu">
+          <button data-view="view-reservations" class="active">Reservations</button>
+          <button data-view="view-manifest">Player Manifest</button>
+          <button data-view="view-waivers">Waiver Tracking</button>
+          <button data-view="view-metrics">Escape Rate Metrics</button>
+          <button data-view="view-revenue">Revenue Reports</button>
+          <button data-view="view-admins">Add / Delete Admins</button>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn ghost" id="export-pdf-btn" type="button">Export Reservations PDF</button>
+          <button class="btn ghost" id="export-json-btn" type="button">Export JSON</button>
+          <button class="btn ghost" id="logout-btn" type="button">Log Out</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">Control Center</div>
+            <h2 id="view-title">Reservations</h2>
+          </div>
+        </header>
+
+        <section class="stats">
+          <article class="stat"><div class="k">Total Reservations</div><div class="v" id="stat-total">0</div></article>
+          <article class="stat"><div class="k">Upcoming</div><div class="v" id="stat-upcoming">0</div></article>
+          <article class="stat"><div class="k">Waivers Signed</div><div class="v" id="stat-waivers">0</div></article>
+          <article class="stat"><div class="k">Estimated Revenue</div><div class="v" id="stat-revenue">0 TND</div></article>
+        </section>
+
+        <section class="view active" id="view-reservations">
+          <div class="table-wrap" id="reservations-table-wrap"></div>
+        </section>
+
+        <section class="view" id="view-manifest">
+          <div class="panel">
+            <h3 style="margin-bottom:.65rem">Upcoming Player Manifest</h3>
+            <ul class="manifest-list" id="manifest-list"></ul>
+          </div>
+        </section>
+
+        <section class="view" id="view-waivers">
+          <div class="panel">
+            <h3 style="margin-bottom:.65rem">Waiver Checklist</h3>
+            <div id="waiver-list"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-metrics">
+          <div class="kpi-grid" id="metrics-grid"></div>
+        </section>
+
+        <section class="view" id="view-revenue">
+          <div class="kpi-grid" id="revenue-kpis"></div>
+          <div class="panel" style="margin-top:.7rem">
+            <h3 style="margin-bottom:.5rem">Popular Time Slots</h3>
+            <div id="popular-slots"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-admins">
+          <div class="panel" style="margin-bottom:.7rem">
+            <div class="eyebrow">Admin Management</div>
+            <h3 style="margin-bottom:.6rem">Add New Admin</h3>
+            <form id="add-admin-form">
+              <div class="field">
+                <label for="new-admin-email">Email</label>
+                <input id="new-admin-email" type="email" required />
+              </div>
+              <div class="field">
+                <label for="new-admin-password">Password</label>
+                <input id="new-admin-password" type="password" required minlength="4" />
+              </div>
+              <button class="btn" type="submit">Add Admin</button>
+              <p class="error" id="admin-error"></p>
+            </form>
+          </div>
+          <div class="panel">
+            <h3>Current Admins</h3>
+            <ul class="admin-list" id="admin-list"></ul>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <script>
+    (function() {
+      const RES_KEY = 'ROOM_RESERVATIONS_V1';
+      const ADM_KEY = 'ROOM_ADMINS_V1';
+      const SESSION_KEY = 'ROOM_ADMIN_SESSION_V1';
+
+      const authShell = document.getElementById('auth-shell');
+      const appShell = document.getElementById('app-shell');
+      const loginForm = document.getElementById('login-form');
+      const loginErr = document.getElementById('login-error');
+      const addAdminForm = document.getElementById('add-admin-form');
+      const adminErr = document.getElementById('admin-error');
+      const adminListEl = document.getElementById('admin-list');
+      const sideMenu = document.getElementById('side-menu');
+
+      function loadJSON(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      }
+      function saveJSON(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function ensureSeedAdmin() {
+        const admins = loadJSON(ADM_KEY, []);
+        if (!admins.length) {
+          saveJSON(ADM_KEY, [{ email: 'admin@gmail.com', password: 'admin' }]);
+        }
+      }
+
+      function getAdmins() { return loadJSON(ADM_KEY, []); }
+      function getReservations() { return loadJSON(RES_KEY, []); }
+      function saveReservations(list) { saveJSON(RES_KEY, list); }
+
+      function setSession(email) { localStorage.setItem(SESSION_KEY, email); }
+      function clearSession() { localStorage.removeItem(SESSION_KEY); }
+      function getSession() { return localStorage.getItem(SESSION_KEY); }
+
+      function showApp(show) {
+        authShell.style.display = show ? 'none' : 'block';
+        appShell.style.display = show ? 'block' : 'none';
+      }
+
+      function escapeHTML(v) {
+        return String(v || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function asNum(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function estimateBookingRevenue(r) {
+        const players = Math.max(0, asNum(r.players));
+        let per = 30;
+        if (players <= 2) per = 40;
+        else if (players === 3) per = 35;
+        return players * per;
+      }
+
+      function isUpcoming(r) {
+        if (!r.date) return false;
+        const d = new Date(r.date + 'T23:59:59');
+        if (Number.isNaN(d.getTime())) return false;
+        return d >= new Date();
+      }
+
+      function getSpecialNote(r) {
+        const notes = [];
+        if (r.firstTimer) notes.push('First-timer');
+        if (r.occasion) notes.push(String(r.occasion));
+        if (r.message) notes.push(String(r.message));
+        return notes.join(' | ') || '-';
+      }
+
+      function formatMoney(n) { return asNum(n).toFixed(2) + ' TND'; }
+
+      function renderStats() {
+        const list = getReservations();
+        const upcoming = list.filter(isUpcoming);
+        const waiverCount = list.filter(r => !!r.waiverSigned).length;
+        const revenue = list.reduce((sum, r) => sum + estimateBookingRevenue(r) + asNum(r.giftCardAmount), 0);
+
+        document.getElementById('stat-total').textContent = String(list.length);
+        document.getElementById('stat-upcoming').textContent = String(upcoming.length);
+        document.getElementById('stat-waivers').textContent = String(waiverCount);
+        document.getElementById('stat-revenue').textContent = formatMoney(revenue);
+      }
+
+      function renderReservationsView() {
+        const wrap = document.getElementById('reservations-table-wrap');
+        const list = getReservations();
+
+        if (!list.length) {
+          wrap.innerHTML = '<div class="empty">No reservations yet.</div>';
+          return;
+        }
+
+        const rows = list.map((r, idx) => {
+          const created = r.createdAt ? new Date(r.createdAt).toLocaleString() : '-';
+          return '<tr>' +
+            '<td>' + escapeHTML(r.id || '-') + '</td>' +
+            '<td>' + escapeHTML(created) + '</td>' +
+            '<td>' + escapeHTML(r.name) + '</td>' +
+            '<td>' + escapeHTML(r.phone) + '</td>' +
+            '<td>' + escapeHTML(r.email) + '</td>' +
+            '<td>' + escapeHTML(r.scenario) + '</td>' +
+            '<td>' + escapeHTML(r.date) + '</td>' +
+            '<td>' + escapeHTML(r.time) + '</td>' +
+            '<td>' + escapeHTML(r.players) + '</td>' +
+            '<td>' + escapeHTML(getSpecialNote(r)) + '</td>' +
+            '<td><input type="checkbox" data-waiver-idx="' + idx + '" ' + (r.waiverSigned ? 'checked' : '') + ' /></td>' +
+            '<td><select data-status-idx="' + idx + '">'
+              + ['new','confirmed','escaped','failed','cancelled'].map(s => '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + s + '</option>').join('')
+              + '</select></td>' +
+            '<td><button class="btn danger small" type="button" data-del-res="' + idx + '">Delete</button></td>' +
+          '</tr>';
+        }).join('');
+
+        wrap.innerHTML =
+          '<div class="table-wrap">'
+          + '<table>'
+          + '<thead><tr>'
+          + '<th>ID</th><th>Created</th><th>Name</th><th>Phone</th><th>Email</th><th>Scenario</th><th>Date</th><th>Time</th><th>Players</th><th>Special Notes</th><th>Waiver</th><th>Status</th><th>Actions</th>'
+          + '</tr></thead>'
+          + '<tbody>' + rows + '</tbody>'
+          + '</table>'
+          + '</div>';
+
+        wrap.querySelectorAll('[data-del-res]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const i = Number(btn.getAttribute('data-del-res'));
+            const next = getReservations().filter((_, idx) => idx !== i);
+            saveReservations(next);
+            refreshAll();
+          });
+        });
+
+        wrap.querySelectorAll('[data-status-idx]').forEach(sel => {
+          sel.addEventListener('change', () => {
+            const i = Number(sel.getAttribute('data-status-idx'));
+            const listNow = getReservations();
+            if (!listNow[i]) return;
+            listNow[i].status = sel.value;
+            saveReservations(listNow);
+            refreshAll();
+          });
+        });
+
+        wrap.querySelectorAll('[data-waiver-idx]').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const i = Number(chk.getAttribute('data-waiver-idx'));
+            const listNow = getReservations();
+            if (!listNow[i]) return;
+            listNow[i].waiverSigned = !!chk.checked;
+            saveReservations(listNow);
+            refreshAll();
+          });
+        });
+      }
+
+      function renderManifestView() {
+        const root = document.getElementById('manifest-list');
+        const upcoming = getReservations().filter(isUpcoming).sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+        if (!upcoming.length) {
+          root.innerHTML = '<div class="empty">No upcoming bookings.</div>';
+          return;
+        }
+
+        root.innerHTML = upcoming.map(r =>
+          '<li class="manifest-item">'
+          + '<div class="manifest-head"><strong>' + escapeHTML(r.scenario || '-') + '</strong><span class="pill">' + escapeHTML(r.date || '-') + ' ' + escapeHTML(r.time || '-') + '</span></div>'
+          + '<div class="manifest-meta">Players: ' + escapeHTML(r.players || '-') + ' | Contact: ' + escapeHTML(r.name || '-') + ' / ' + escapeHTML(r.phone || '-') + ' / ' + escapeHTML(r.email || '-') + '</div>'
+          + '<div class="manifest-meta">Special notes: ' + escapeHTML(getSpecialNote(r)) + '</div>'
+          + '</li>'
+        ).join('');
+      }
+
+      function renderWaiverView() {
+        const root = document.getElementById('waiver-list');
+        const list = getReservations().filter(isUpcoming);
+
+        if (!list.length) {
+          root.innerHTML = '<div class="empty">No upcoming bookings for waiver tracking.</div>';
+          return;
+        }
+
+        root.innerHTML = list.map(r =>
+          '<div class="waiver-row">'
+          + '<div><strong>' + escapeHTML(r.name || '-') + '</strong><div class="hint">' + escapeHTML(r.date || '-') + ' ' + escapeHTML(r.time || '-') + ' | ' + escapeHTML(r.scenario || '-') + '</div></div>'
+          + '<label><input type="checkbox" data-waiver-id="' + escapeHTML(r.id || '') + '" ' + (r.waiverSigned ? 'checked' : '') + ' /> Signed</label>'
+          + '</div>'
+        ).join('');
+
+        root.querySelectorAll('[data-waiver-id]').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const id = chk.getAttribute('data-waiver-id');
+            const all = getReservations();
+            const target = all.find(x => String(x.id) === String(id));
+            if (target) target.waiverSigned = !!chk.checked;
+            saveReservations(all);
+            refreshAll();
+          });
+        });
+      }
+
+      function renderMetricsView() {
+        const root = document.getElementById('metrics-grid');
+        const list = getReservations();
+        const byScenario = {};
+
+        list.forEach(r => {
+          const key = r.scenario || 'Unknown';
+          if (!byScenario[key]) byScenario[key] = { total: 0, escaped: 0, failed: 0 };
+          byScenario[key].total += 1;
+          if (r.status === 'escaped') byScenario[key].escaped += 1;
+          if (r.status === 'failed') byScenario[key].failed += 1;
+        });
+
+        const keys = Object.keys(byScenario);
+        if (!keys.length) {
+          root.innerHTML = '<div class="empty">No data yet for escape metrics.</div>';
+          return;
+        }
+
+        root.innerHTML = keys.map(name => {
+          const s = byScenario[name];
+          const decisions = s.escaped + s.failed;
+          const successRate = decisions ? (s.escaped / decisions) * 100 : 0;
+          const warning = (s.failed > 0 && s.escaped === 0) ? ' Potentially too hard (0% escaped).' : '';
+          return '<article class="kpi">'
+            + '<h4>' + escapeHTML(name) + '</h4>'
+            + '<p>Total runs: <strong>' + s.total + '</strong></p>'
+            + '<p>Escaped: <strong>' + s.escaped + '</strong> | Failed: <strong>' + s.failed + '</strong></p>'
+            + '<p>Escape rate: <strong>' + successRate.toFixed(1) + '%</strong>' + escapeHTML(warning) + '</p>'
+            + '</article>';
+        }).join('');
+      }
+
+      function isThisWeek(dateObj) {
+        const now = new Date();
+        const d = new Date(dateObj);
+        const day = (now.getDay() + 6) % 7;
+        const monday = new Date(now);
+        monday.setHours(0,0,0,0);
+        monday.setDate(now.getDate() - day);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 7);
+        return d >= monday && d < sunday;
+      }
+
+      function renderRevenueView() {
+        const kpis = document.getElementById('revenue-kpis');
+        const slots = document.getElementById('popular-slots');
+        const list = getReservations();
+
+        const now = new Date();
+        const today = now.toISOString().slice(0, 10);
+        const monthPrefix = today.slice(0, 7);
+
+        let daily = 0;
+        let weekly = 0;
+        let monthly = 0;
+        let giftCards = 0;
+        const slotMap = {};
+
+        list.forEach(r => {
+          const base = estimateBookingRevenue(r);
+          const gift = asNum(r.giftCardAmount);
+          const total = base + gift;
+          const dateRaw = r.date || '';
+
+          giftCards += gift;
+          if (dateRaw === today) daily += total;
+          if (dateRaw.startsWith(monthPrefix)) monthly += total;
+          if (dateRaw) {
+            const d = new Date(dateRaw + 'T00:00:00');
+            if (!Number.isNaN(d.getTime()) && isThisWeek(d)) weekly += total;
+          }
+
+          const slot = r.time || 'Unknown';
+          slotMap[slot] = (slotMap[slot] || 0) + 1;
+        });
+
+        kpis.innerHTML =
+          '<article class="kpi"><h4>Daily Revenue</h4><p><strong>' + formatMoney(daily) + '</strong></p></article>' +
+          '<article class="kpi"><h4>Weekly Revenue</h4><p><strong>' + formatMoney(weekly) + '</strong></p></article>' +
+          '<article class="kpi"><h4>Monthly Revenue</h4><p><strong>' + formatMoney(monthly) + '</strong></p></article>' +
+          '<article class="kpi"><h4>Gift Card Sales</h4><p><strong>' + formatMoney(giftCards) + '</strong></p></article>';
+
+        const top = Object.entries(slotMap).sort((a,b) => b[1]-a[1]).slice(0, 6);
+        if (!top.length) {
+          slots.innerHTML = '<div class="empty">No slot activity yet.</div>';
+          return;
+        }
+
+        slots.innerHTML = top.map(([slot, count]) =>
+          '<div class="waiver-row"><div><strong>' + escapeHTML(slot) + '</strong></div><span class="pill">' + count + ' bookings</span></div>'
+        ).join('');
+      }
+
+      function renderAdmins() {
+        const current = getSession();
+        const admins = getAdmins();
+
+        adminListEl.innerHTML = admins.map(a => {
+          const lock = a.email === 'admin@gmail.com';
+          const self = a.email === current;
+          const disabled = lock || self;
+          const hint = lock ? 'Default admin' : (self ? 'Current session' : '');
+          return '<li class="admin-item">'
+            + '<span>' + escapeHTML(a.email) + (hint ? ' - ' + escapeHTML(hint) : '') + '</span>'
+            + '<button class="btn danger small" type="button" data-del-admin="' + escapeHTML(a.email) + '"' + (disabled ? ' disabled' : '') + '>Delete</button>'
+            + '</li>';
+        }).join('');
+
+        adminListEl.querySelectorAll('[data-del-admin]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const email = btn.getAttribute('data-del-admin');
+            const next = getAdmins().filter(a => a.email !== email);
+            saveJSON(ADM_KEY, next);
+            refreshAll();
+          });
+        });
+      }
+
+      function refreshAll() {
+        renderStats();
+        renderReservationsView();
+        renderManifestView();
+        renderWaiverView();
+        renderMetricsView();
+        renderRevenueView();
+        renderAdmins();
+      }
+
+      function switchView(id) {
+        document.querySelectorAll('.menu button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+        document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
+        const titleMap = {
+          'view-reservations': 'Reservations',
+          'view-manifest': 'Player Manifest',
+          'view-waivers': 'Waiver Tracking',
+          'view-metrics': 'Escape Rate Metrics',
+          'view-revenue': 'Revenue Reports',
+          'view-admins': 'Admin Management'
+        };
+        const ttl = document.getElementById('view-title');
+        if (ttl) ttl.textContent = titleMap[id] || 'Dashboard';
+      }
+
+      function tryLogin(email, password) {
+        return getAdmins().some(a => a.email.toLowerCase() === String(email).toLowerCase() && a.password === password);
+      }
+
+      function exportPdfReservations() {
+        const list = getReservations();
+        if (!list.length) {
+          alert('No reservations to export.');
+          return;
+        }
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert('PDF library unavailable in this browser.');
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        const margin = 34;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const tableWidth = pageWidth - margin * 2;
+        let y = 42;
+
+        doc.setFontSize(16);
+        doc.text('The Room - Reservations Report', margin, y);
+        y += 18;
+        doc.setFontSize(10);
+        doc.text('Generated: ' + new Date().toLocaleString(), margin, y);
+        y += 20;
+
+        const columns = [
+          { key: 'id', label: '#', w: 28 },
+          { key: 'name', label: 'Name', w: 82 },
+          { key: 'phone', label: 'Phone', w: 68 },
+          { key: 'scenario', label: 'Scenario', w: 78 },
+          { key: 'slot', label: 'Date/Time', w: 92 },
+          { key: 'players', label: 'Players', w: 40 },
+          { key: 'status', label: 'Status', w: 46 },
+          { key: 'waiver', label: 'Waiver', w: 42 },
+          { key: 'gift', label: 'Gift', w: 42 }
+        ];
+
+        const totalFixed = columns.reduce((sum, c) => sum + c.w, 0);
+        const notesColW = Math.max(120, tableWidth - totalFixed);
+        columns.push({ key: 'notes', label: 'Notes', w: notesColW });
+
+        function truncateText(value, max) {
+          const txt = String(value || '-').replace(/\s+/g, ' ').trim();
+          if (txt.length <= max) return txt;
+          return txt.slice(0, Math.max(1, max - 1)) + '...';
+        }
+
+        function drawHeader() {
+          let x = margin;
+          const h = 18;
+          doc.setFillColor(18, 23, 37);
+          doc.rect(margin, y, tableWidth, h, 'F');
+          doc.setDrawColor(210, 210, 210);
+          doc.setLineWidth(0.4);
+          doc.setFontSize(8);
+          doc.setTextColor(245, 247, 255);
+          columns.forEach(col => {
+            doc.rect(x, y, col.w, h);
+            doc.text(col.label, x + 3, y + 12);
+            x += col.w;
+          });
+          y += h;
+        }
+
+        function ensureRoom(nextHeight) {
+          if (y + nextHeight <= pageHeight - margin) return;
+          doc.addPage();
+          y = margin;
+          drawHeader();
+        }
+
+        drawHeader();
+        doc.setTextColor(20, 20, 20);
+        doc.setFontSize(7.4);
+
+        list.forEach((r, idx) => {
+          const row = {
+            id: idx + 1,
+            name: truncateText(r.name, 18),
+            phone: truncateText(r.phone, 16),
+            scenario: truncateText(r.scenario, 15),
+            slot: truncateText((r.date || '-') + ' ' + (r.time || '-'), 18),
+            players: truncateText(r.players, 4),
+            status: truncateText(r.status || 'new', 8),
+            waiver: r.waiverSigned ? 'Yes' : 'No',
+            gift: truncateText(formatMoney(r.giftCardAmount || 0), 12),
+            notes: truncateText(getSpecialNote(r), 42)
+          };
+
+          const rowH = 16;
+          ensureRoom(rowH);
+
+          let x = margin;
+          columns.forEach(col => {
+            const value = String(row[col.key] || '-');
+            doc.rect(x, y, col.w, rowH);
+            doc.text(value, x + 3, y + 11);
+            x += col.w;
+          });
+          y += rowH;
+        });
+
+        doc.save('the-room-reservations.pdf');
+      }
+
+      ensureSeedAdmin();
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        loginErr.textContent = '';
+
+        const email = (document.getElementById('login-email').value || '').trim();
+        const password = document.getElementById('login-password').value || '';
+
+        if (!tryLogin(email, password)) {
+          loginErr.textContent = 'Invalid credentials.';
+          return;
+        }
+
+        setSession(email);
+        showApp(true);
+        refreshAll();
+      });
+
+      addAdminForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        adminErr.textContent = '';
+
+        const emailInput = document.getElementById('new-admin-email');
+        const passInput = document.getElementById('new-admin-password');
+        const email = (emailInput.value || '').trim().toLowerCase();
+        const password = passInput.value || '';
+
+        if (!email || !password) {
+          adminErr.textContent = 'Email and password are required.';
+          return;
+        }
+
+        const admins = getAdmins();
+        if (admins.some(a => a.email.toLowerCase() === email)) {
+          adminErr.textContent = 'This admin already exists.';
+          return;
+        }
+
+        admins.push({ email: email, password: password });
+        saveJSON(ADM_KEY, admins);
+        emailInput.value = '';
+        passInput.value = '';
+        refreshAll();
+      });
+
+      sideMenu.querySelectorAll('button[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        clearSession();
+        showApp(false);
+      });
+
+      document.getElementById('export-json-btn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(getReservations(), null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'reservations.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('export-pdf-btn').addEventListener('click', exportPdfReservations);
+
+      const session = getSession();
+      if (session && getAdmins().some(a => a.email === session)) {
+        showApp(true);
+        refreshAll();
+      } else {
+        showApp(false);
+      }
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === RES_KEY || e.key === ADM_KEY) {
+          if (appShell.style.display === 'block') refreshAll();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
