@@ -1463,6 +1463,7 @@
         <select id="language-select" aria-label="Language selector">
           <option value="fr">FR</option>
           <option value="en">EN</option>
+          <option value="ar">AR</option>
         </select>
       </div>
       <a href="#" class="btn btn-primary" data-page="booking" style="display:none" id="nav-cta">Réserver</a>
@@ -1489,6 +1490,7 @@
     <select id="language-select-mobile" aria-label="Mobile language selector">
       <option value="fr">FR</option>
       <option value="en">EN</option>
+      <option value="ar">AR</option>
     </select>
   </div>
 </aside>
@@ -3354,10 +3356,10 @@
   }
 
   function applyLang(lang) {
-    const activeLang = lang === 'en' ? 'en' : 'fr';
+    const activeLang = (lang === 'en' || lang === 'ar') ? lang : 'fr';
     const t = T[activeLang] || T.fr;
     document.documentElement.lang = activeLang;
-    document.documentElement.dir = 'ltr';
+    document.documentElement.dir = (activeLang === 'ar') ? 'rtl' : 'ltr';
     document.documentElement.style.setProperty('--featured-label', `'${t.featuredLabel || 'POPULAIRE'}'`);
 
     // Nav
@@ -3592,7 +3594,7 @@
   }
 
   const rawStoredLang = localStorage.getItem('room_lang');
-  const storedLang = rawStoredLang === 'en' ? 'en' : 'fr';
+  const storedLang = (rawStoredLang === 'en' || rawStoredLang === 'ar') ? rawStoredLang : 'fr';
   if (langSelect) langSelect.value = storedLang;
   if (mobileLangSelect) mobileLangSelect.value = storedLang;
   applyLang(storedLang);
