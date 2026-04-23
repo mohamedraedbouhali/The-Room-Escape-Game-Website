@@ -54,10 +54,7 @@ Use these credentials only for local/demo usage and change them for production s
 
 ## Notes
 
-- Reservation and admin data are stored in the browser (localStorage).
-- For production deployment, move authentication and booking storage to a secure backend.
 
-## License
 
 This project is currently shared without an explicit license.
 <<<<<<< HEAD
