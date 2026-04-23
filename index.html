@@ -542,8 +542,6 @@
       color: var(--red); margin-bottom: .6rem;
     }
     .section-eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--red); }
-    html[dir="rtl"] .section-eyebrow::before { display:none; }
-    html[dir="rtl"] .section-eyebrow { flex-direction: row-reverse; }
 
     .section-title { font-size: clamp(2.4rem, 5vw, 3.8rem); color: var(--white); margin-bottom: .5rem; }
     .section-copy  { color: var(--muted); font-size: .97rem; line-height: 1.75; max-width: 54ch; }
@@ -1399,13 +1397,6 @@
     }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* ─── RTL ────────────────────────────────── */
-    html[dir="rtl"] body { text-align: right; }
-    html[dir="rtl"] .scenario-topline,
-    html[dir="rtl"] .scenario-actions,
-    html[dir="rtl"] .hero-actions { flex-direction: row-reverse; }
-    html[dir="rtl"] .section-eyebrow::before { display: none; }
-
     /* ─── RESPONSIVE ─────────────────────────── */
     @media (min-width: 600px) {
       .features-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1463,7 +1454,6 @@
         <select id="language-select" aria-label="Language selector">
           <option value="fr">FR</option>
           <option value="en">EN</option>
-          <option value="ar">AR</option>
         </select>
       </div>
       <a href="#" class="btn btn-primary" data-page="booking" style="display:none" id="nav-cta">Réserver</a>
@@ -1490,7 +1480,6 @@
     <select id="language-select-mobile" aria-label="Mobile language selector">
       <option value="fr">FR</option>
       <option value="en">EN</option>
-      <option value="ar">AR</option>
     </select>
   </div>
 </aside>
@@ -2393,7 +2382,7 @@
   </div>
 </footer>
 
-<audio id="site-ambience-audio" src="deep.mp3" loop autoplay muted preload="auto" playsinline style="display:none" aria-hidden="true"></audio>
+<audio id="site-ambience-audio" src="deep.mp3" loop autoplay muted preload="auto" playsinline style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></audio>
 
 
 <script>
@@ -2445,7 +2434,6 @@
 
   function getActiveLang() {
     if (langSelect && langSelect.value === 'en') return 'en';
-    if (langSelect && langSelect.value === 'ar') return 'ar';
     return 'fr';
   }
 
@@ -2802,6 +2790,7 @@
     ambienceAudio.muted = true;
     try {
       await seekAmbienceStart();
+      ambienceAudio.addEventListener('playing', makeAmbienceAudible, { once: true });
       await ambienceAudio.play();
       return true;
     } catch (_) {
@@ -2828,6 +2817,7 @@
         return;
       }
       try {
+        ambienceAudio.addEventListener('playing', makeAmbienceAudible, { once: true });
         await ambienceAudio.play();
         applyAmbienceStartOffset();
       } catch (_) {
@@ -3230,120 +3220,6 @@
         ['🚪 When should I arrive?','Please arrive 20 minutes before your session.']
       ]
     },
-    ar: {
-      dir: 'rtl',
-      nav: ['الرئيسية','السيناريوهات','الحجز','الأسعار','اتصل بنا'],
-      cta: 'احجز الآن',
-      heroSub: 'جرأة الدخول. <em>حاول الخروج.</em>',
-      heroBadge: 'غرفة الهروب — تونس، تونس',
-      heroBtn1: 'احجز الآن', heroBtn2: 'استعرض السيناريوهات',
-      scrollHint: 'اسحب',
-      heroTagline: '60 دقيقة. هدف واحد. هل ستخرج؟',
-      ambienceOn: 'أجواء الغرفة: تشغيل',
-      ambienceOff: 'أجواء الغرفة: إيقاف',
-      featTitle: 'لماذا The Room Escape Game؟',
-      featCopy: 'انغماس كامل في عوالم مصممة خصيصاً لاختبار حدودك.',
-      featEye: 'التجربة',
-      pathwaysEye: 'مسارك',
-      pathwaysTitle: 'اختر تجربة مناسبة لمستواك.',
-      pathwaysCopy: 'مسارات مختلفة للمبتدئين والمحترفين والمجموعات.',
-      pFirstKicker: 'المبتدئون', pFirstTitle: 'بداية مريحة', pFirstCopy: 'ابدأ بأسهل غرفة وتحقق من قسم الأسئلة الشائعة.', pFirstBtn: 'الغرفة المقترحة',
-      pProKicker: 'المحترفون', pProTitle: 'تحدي أقصى', pProCopy: 'واجه أصعب غرفة بأقل نسبة نجاح.', pProBtn: 'ابدأ التحدي',
-      pCorpKicker: 'الشركات/المجموعات', pCorpTitle: 'بناء فريق', pCorpCopy: 'جلسات كبيرة تركز على التواصل والقيادة تحت الضغط.', pCorpBtn: 'خيارات المجموعات',
-      hallEye: 'قاعة الأبطال', hallTitle: 'أفضل الفرق وآراء اللاعبين',
-      hallCards: [
-        { team: 'فريق أطلس', meta: 'Saw Chapter 2 · 43:12', quote: '"توتر وألغاز وإخراج رائع من البداية للنهاية."' },
-        { team: 'البوم الليلي', meta: 'Le Cannibal · 51:09', quote: '"أفضل تجربة هروب في تونس. اندماج كامل واستقبال ممتاز."' },
-        { team: 'كود بريكرز', meta: 'Guantánamo · 58:33', quote: '"ممتاز لبناء الفرق، ضغط جماعي ممتع وتجربة قوية."' }
-      ],
-      heroSecret: 'رسالة سرية: الباب 03 يفتح عند 22:30.',
-      blueprintSecret: 'أرشيف مخفي: غرفة المختبر تحتوي على مدخل ثانوي.',
-      safetyTitle: 'بروتوكول السلامة',
-      safetyCopy: 'تتم مراقبة جميع الغرف مباشرة عبر CCTV بواسطة Game Masters. أزرار الخروج الطارئ فعالة دائمًا.',
-      safety1: 'مراقبة CCTV مباشرة في كل غرفة.',
-      safety2: 'مخارج الطوارئ متاحة في كل وقت.',
-      safety3: 'شرح سلامة قبل كل مهمة.',
-      blueprintEye: 'مخطط تفاعلي',
-      blueprintTitle: '',
-      blueprintCopy: 'اضغط على أي غرفة لعرض ملخص المهمة ومؤشرات الوصول.',
-      bpBook: 'احجز هذه الغرفة',
-      cards: [['6 سيناريوهات','من الرعب إلى المغامرة الملحمية.'],['2 إلى 9 لاعبين','مثالي للأصدقاء أو فرق العمل.'],['60 دقيقة','كل ثانية تحسب للهروب.']],
-      faqTitle: 'الأسئلة الشائعة',
-      faqEye: 'أسئلة',
-      locTitle: 'عنواننا', locEye: 'جدنا',
-      locSub: 'مفتوح كل يوم · 10:00 – 22:00',
-      locBtn1: '📍 الاتجاهات', locBtn2: 'احجز',
-      scenTitle: 'اختر مهمتك.',
-      scenCopy: 'ستة عوالم وستة مستويات من التحدي. لديكم ساعة واحدة.',
-      scenEye: 'السيناريوهات',
-      explore: 'اكتشف', book: 'احجز',
-      tarifsTitle: 'الأسعار حسب الفريق', tarifsEye: 'الأسعار',
-      tarifsCopy: 'أسعار واضحة وشفافة. كلما زاد عدد اللاعبين، انخفض السعر.',
-      bookTitle: 'الحجز', contactTitle: 'تواصل معنا.',
-      contactEye: 'اتصل بنا', contactCopy: 'للحجز أو طلب عرض سعر أو تنظيم حدث خاص.',
-      coords: 'معلومات الاتصال', hours: 'أوقات العمل',
-      reserveNow: 'احجز الآن',
-      available: 'متاح', pending: 'قيد الانتظار', reserved: 'محجوز',
-      modalTitle: 'نموذج الحجز',
-      bookingStepTitles: ['بياناتك','اختيار الموعد','إتمام الحجز'],
-      bookingStepKickers: ['الخطوة 1 من 3','الخطوة 2 من 3','الخطوة 3 من 3'],
-      bookingBack: 'عودة',
-      bookingNext: 'متابعة',
-      bookingPlayersUnit: 'لاعبين',
-      footerCopy: '© 2025 The Room Escape Game — تونس. جميع الحقوق محفوظة.',
-      igLabel: 'إنستغرام الرسمي',
-      featuredLabel: 'الأكثر طلبًا',
-      pricingNames: ['ثنائي','ثلاثي','مجموعة'],
-      pricingUnit: 'دينار / للشخص',
-      pricingFeatures: [
-        ['لاعبان','تحدٍ مكثف لثنائي','جلسة 60 دقيقة','صورة تذكارية مشمولة'],
-        ['3 لاعبين','توازن بين التفكير والتعاون','جلسة 60 دقيقة','صورة تذكارية مشمولة'],
-        ['4 لاعبين أو أكثر','أفضل سعر للمجموعات','جلسة 60 دقيقة','صورة تذكارية مشمولة']
-      ],
-      scenarioDiffs: ['متوسط','صعب','مغامرة','رعب','هروب','صعب'],
-      scenarioDescs: [
-        'صوت غامض يحتجزكم في لعبة جيغسو. أمامكم 60 دقيقة للحل أو الهلاك.',
-        'تستيقظون في ظلام تام وقلوبكم تتسارع. 60 دقيقة فقط للخروج أحياء.',
-        'عالِقون في سفينة بلاك بيرد، وعليكم إيجاد الكنز والهروب أحياء.',
-        'تتسللون إلى مستشفى الدكتور ليكتر. أي خطأ بسيط قد يكون قاتلًا.',
-        'سجن، وحارس فاسد، و60 دقيقة للاختفاء قبل انطلاق الإنذار.',
-        'الوقت يداهمكم. فككوا المافيا قبل فوات الأوان.'
-      ],
-      scenarioAccess: [
-        ['♿','💡','🚫 زحف'],
-        ['♿ جزئي','⚠️ وميض','🚶 زحف'],
-        ['♿','💡','🚫 زحف'],
-        ['♿ جزئي','⚠️ إضاءة منخفضة','🚶 زحف'],
-        ['♿ جزئي','💡','🚫 زحف'],
-        ['♿','⚠️ إضاءة متحركة','🚫 زحف']
-      ],
-      detailEyebrows: ['سيناريو · الغرفة 1','سيناريو · الغرفة 2','سيناريو · مغامرة','سيناريو · رعب','سيناريو · هروب','سيناريو · تسلل'],
-      detailPlayers: ['👥 2 – 8 لاعبين','👥 3 – 8 لاعبين','👥 2 – 6 لاعبين','👥 3 – 8 لاعبين','👥 4 – 9 لاعبين','👥 3 – 9 لاعبين'],
-      detailDifficulty: ['⚡ متوسط','⚡ صعب','⚡ متوسط','⚡ صعب','⚡ صعب','⚡ صعب'],
-      detailDescriptions: [
-        'هل يمكنكم النجاة من لعبة جيغسو؟ تستيقظون في ظلام تام بينما يتردد صوت مرعب: "أريد أن ألعب لعبة..." عليكم حل الألغاز والهروب قبل نفاد الوقت.',
-        'هل يمكنكم النجاة من لعبة جيغسو؟ في ظلام كامل وصوت مرعب يهمس: "أريد أن ألعب لعبة..." مهمتكم حل الألغاز وإيجاد طريق النجاة قبل فوات الأوان.',
-        'أنتم مغامرون على متن سفينة بلاك بيرد الأسطورية. ابحثوا عن الكنز، تجنبوا الفخاخ، حلوا الألغاز، واهربوا قبل أن تُغلق عليكم السفينة.',
-        'اختفى صديقكم الصحفي أثناء تحقيقه في حالات اختفاء غامضة. يقودكم الأثر إلى مستشفى الدكتور ليكتر المهجور. ادخلوا إن تجرأتم واخرجوا إن استطعتم.',
-        'مسجونون في غوانتانامو، وحارس فاسد مستعد للمساعدة. أمامكم 60 دقيقة لاتباع التعليمات والوصول إلى الحرية. الهروب أو الإعدام، القرار لكم.',
-        'الوقت ينفد. دمّروا شبكة المافيا قبل فوات الأوان. عملية التسلل بدأت والهدف إسقاط الكارتل من الداخل.'
-      ],
-      detailPricing: 'لاعبان: <strong>40 دينار</strong>/شخص · 3 لاعبين: <strong>35 دينار</strong>/شخص · 4+: <strong>30 دينار</strong>/شخص',
-      detailSuccessLabel: 'نسبة النجاح',
-      locationLabel: '📍 الموقع',
-      bookingPlayers: ['2 – 8 لاعبين','2 – 8 لاعبين','2 – 6 لاعبين','3 – 8 لاعبين','4 – 9 لاعبين','3 – 9 لاعبين'],
-      modalName: 'الاسم الكامل', modalPhone: 'رقم الهاتف', modalEmail: 'البريد الإلكتروني', modalScenario: 'السيناريو', modalDate: 'التاريخ', modalTime: 'الوقت', modalPlayers: 'عدد اللاعبين', modalMessage: 'رسالة (اختياري)',
-      modalNamePh: 'اسمك', modalPhonePh: 'رقمك', modalEmailPh: 'بريدك الإلكتروني', modalPlayersPh: '2 إلى 9', modalMessagePh: 'معلومات إضافية…',
-      modalScenarioOpt: 'اختر سيناريو', modalTimeOpt: 'اختر وقتًا', modalSubmit: 'تأكيد الحجز', modalSuccess: 'تم إرسال الحجز! سنتواصل معك قريبًا.',
-      faqItems:[
-        ['🎯 هل هناك حد عمري؟','لا يوجد حد عمري. من 9 إلى 16 سنة يجب أن يكونوا مع بالغ.'],
-        ['🤰 أنا حامل، هل يمكنني اللعب؟','التجربة ليست مرهقة ويمكنك المغادرة في أي وقت.'],
-        ['🧩 أعاني من رهاب الأماكن المغلقة، هل يمكنني اللعب؟','الغرف واسعة والباب غير مغلق بالكامل.'],
-        ['📅 كيف يمكنني الحجز؟','يمكنك الحجز عبر الموقع أو الهاتف أو مباشرةً.'],
-        ['⏱️ كم مدة الجلسة؟','شرح سريع + 60 دقيقة لعب + صورة تذكارية.'],
-        ['🚪 متى يجب أن أصل؟','يرجى الوصول قبل 20 دقيقة من موعدك.']
-      ]
-    }
   };
 
   function setText(sel, val) {
@@ -3356,10 +3232,9 @@
   }
 
   function applyLang(lang) {
-    const activeLang = (lang === 'en' || lang === 'ar') ? lang : 'fr';
+    const activeLang = (lang === 'en') ? lang : 'fr';
     const t = T[activeLang] || T.fr;
     document.documentElement.lang = activeLang;
-    document.documentElement.dir = (activeLang === 'ar') ? 'rtl' : 'ltr';
     document.documentElement.style.setProperty('--featured-label', `'${t.featuredLabel || 'POPULAIRE'}'`);
 
     // Nav
@@ -3594,7 +3469,7 @@
   }
 
   const rawStoredLang = localStorage.getItem('room_lang');
-  const storedLang = (rawStoredLang === 'en' || rawStoredLang === 'ar') ? rawStoredLang : 'fr';
+  const storedLang = (rawStoredLang === 'en') ? rawStoredLang : 'fr';
   if (langSelect) langSelect.value = storedLang;
   if (mobileLangSelect) mobileLangSelect.value = storedLang;
   applyLang(storedLang);
