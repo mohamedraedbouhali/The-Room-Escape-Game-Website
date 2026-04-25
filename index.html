@@ -1495,7 +1495,6 @@
     <div class="hero-media" aria-hidden="true">
       <img src="img/scary.png" alt="" />
     </div>
-    <button class="ambience-toggle" id="sound-toggle" type="button" aria-pressed="false">Room Ambience: Off</button>
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
       Escape Game — Tunis, Tunisie
@@ -2382,7 +2381,7 @@
   </div>
 </footer>
 
-<audio id="site-ambience-audio" src="deep.mp3" loop autoplay muted preload="auto" playsinline style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></audio>
+<audio id="site-ambience-audio" src="dep.mp3" loop autoplay preload="auto" playsinline style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></audio>
 
 
 <script>
@@ -2754,8 +2753,8 @@
 
   function prepareAmbienceElement() {
     if (!ambienceAudio || ambiencePrepared) return;
-    ambienceAudio.muted = true;
-    ambienceAudio.defaultMuted = true;
+    ambienceAudio.defaultMuted = false;
+    ambienceAudio.muted = false;
     ambienceAudio.loop = true;
     ambienceAudio.volume = 1;
     ambienceAudio.load();
@@ -2786,8 +2785,8 @@
     prepareAmbienceElement();
     ambienceAudio.loop = true;
     ambienceAudio.volume = 1;
-    ambienceAudio.defaultMuted = true;
-    ambienceAudio.muted = true;
+    ambienceAudio.defaultMuted = false;
+    ambienceAudio.muted = false;
     try {
       await seekAmbienceStart();
       ambienceAudio.addEventListener('playing', makeAmbienceAudible, { once: true });
