@@ -1511,7 +1511,6 @@
     <h1 class="hero-title" data-text="THE ROOM">THE<span class="red">ROOM</span><span class="hero-title-sub">ESCAPE GAME</span></h1>
     <p class="hero-sub">Osez entrer. <em>Essayez d'en sortir.</em></p>
     <p class="hero-tagline" id="hero-tagline">60 Minutes. One Goal. Can You Get Out?</p>
-    <span class="flashlight-secret" id="hero-secret">Secret transmission: Door 03 unlocks at 22:30.</span>
     <div class="hero-actions">
       <a href="#" class="btn btn-primary hero-cta-main" data-page="booking">Réserver maintenant</a>
       <a href="#" class="btn btn-outline" data-page="scenarios">Voir les scénarios</a>
@@ -3026,7 +3025,6 @@
         { team: 'Night Owls', meta: 'Le Cannibal · 51:09', quote: '"Le meilleur escape game de Tunis. Immersion totale, accueil top."' },
         { team: 'Codebreakers', meta: 'Guantánamo · 58:33', quote: '"Parfait pour un team building, vraie pression collective et super fun."' }
       ],
-      heroSecret: 'Transmission secrète : la porte 03 se déverrouille à 22:30.',
       blueprintSecret: 'Archive cachée : la salle Lab contient un accès secondaire.',
       safetyTitle: 'Safety Protocol',
       safetyCopy: 'Toutes les salles sont surveillées en direct par nos Game Masters via CCTV. En cas d\'inconfort, les boutons d\'urgence restent actifs en permanence.',
@@ -3140,7 +3138,6 @@
         { team: 'Night Owls', meta: 'Cannibal · 51:09', quote: '"Best escape game in Tunis. Full immersion and great hosts."' },
         { team: 'Codebreakers', meta: 'Guantánamo · 58:33', quote: '"Perfect for team-building, real collective pressure and pure fun."' }
       ],
-      heroSecret: 'Secret transmission: Door 03 unlocks at 22:30.',
       blueprintSecret: 'Hidden archive: Lab room contains a secondary access.',
       safetyTitle: 'Safety Protocol',
       safetyCopy: 'Every room is monitored live by Game Masters via CCTV. Emergency exit buttons remain active at all times.',
@@ -3293,7 +3290,6 @@
     // Hall of fame and safety
     setText('#hall-eye', t.hallEye);
     setText('#hall-title', t.hallTitle);
-    setText('#hero-secret', t.heroSecret);
     document.querySelectorAll('.hall-card').forEach((card, i) => {
       if (!t.hallCards || !t.hallCards[i]) return;
       const title = card.querySelector('.hall-team');
