@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - The Room</title>
   <link rel="icon" type="image/webp" href="img/loc.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
@@ -21,22 +24,49 @@
       --danger: #ef4444;
       --radius: 12px;
       --sidebar-w: 260px;
+      --shadow-soft: 0 16px 36px rgba(0, 0, 0, .35);
+      --shadow-glow: 0 0 0 1px rgba(220, 38, 38, .18), 0 20px 45px rgba(220, 38, 38, .12);
     }
 
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
-      font-family: Segoe UI, Arial, sans-serif;
+      font-family: 'Space Grotesk', Segoe UI, Arial, sans-serif;
       color: var(--text);
       min-height: 100vh;
       background:
         radial-gradient(900px 520px at 6% -8%, rgba(220,38,38,.2), transparent 52%),
         radial-gradient(700px 420px at 100% 0%, rgba(248,113,113,.12), transparent 45%),
         var(--bg);
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(50px);
+      opacity: .36;
+    }
+    body::before {
+      width: 280px;
+      height: 280px;
+      left: -90px;
+      top: 18vh;
+      background: radial-gradient(circle, rgba(220,38,38,.45) 0%, rgba(220,38,38,0) 72%);
+    }
+    body::after {
+      width: 340px;
+      height: 340px;
+      right: -120px;
+      bottom: 10vh;
+      background: radial-gradient(circle, rgba(99,102,241,.24) 0%, rgba(99,102,241,0) 72%);
     }
 
     .auth-shell, .app-shell { width: min(1260px, 96vw); margin: 0 auto; }
-    .auth-shell { padding: 2rem 0; }
+    .auth-shell { padding: 2rem 0; position: relative; z-index: 1; }
 
     .auth-card {
       width: min(460px, 100%);
@@ -45,10 +75,21 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 1.35rem;
-      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+      animation: cardEnter .42s ease;
+    }
+
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1, h2, h3, h4, p { margin: 0; }
+    h1, h2, h3, h4 {
+      font-family: 'Rajdhani', 'Space Grotesk', Segoe UI, Arial, sans-serif;
+      letter-spacing: .02em;
+    }
     .eyebrow {
       color: var(--accent-2);
       text-transform: uppercase;
@@ -87,29 +128,34 @@
     .btn {
       border: 1px solid transparent;
       border-radius: 10px;
-      background: var(--accent);
+      background: linear-gradient(180deg, #e03a3a, #c71f1f);
       color: #fff;
       font-weight: 700;
       padding: .68rem .92rem;
       cursor: pointer;
-      transition: transform .15s ease, background .2s ease;
+      transition: transform .15s ease, background .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
-    .btn:hover { transform: translateY(-1px); background: #ef4444; }
+    .btn:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #ef4444, #dc2626);
+      box-shadow: 0 12px 26px rgba(220,38,38,.3);
+    }
     .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
-    .btn.ghost:hover { background: rgba(255,255,255,.05); }
+    .btn.ghost:hover { background: rgba(255,255,255,.06); border-color: rgba(220,38,38,.45); }
     .btn.danger { background: rgba(239,68,68,.14); color: #fecaca; border-color: rgba(239,68,68,.35); }
     .btn.small { font-size: .78rem; padding: .36rem .55rem; border-radius: 8px; }
 
     .error { margin-top: .55rem; min-height: 1.1rem; color: #fecaca; font-size: .9rem; }
     .auth-help { margin-top: .7rem; color: var(--muted); font-size: .86rem; }
 
-    .app-shell { display: none; padding: 1rem 0 1.4rem; }
+    .app-shell { display: none; padding: 1rem 0 1.4rem; position: relative; z-index: 1; }
     .layout {
       display: grid;
-      grid-template-columns: var(--sidebar-w) 1fr;
+      grid-template-columns: minmax(220px, var(--sidebar-w)) minmax(0, 1fr);
       gap: 1rem;
       align-items: start;
     }
+    .layout > * { min-width: 0; }
 
     .sidebar {
       position: sticky;
@@ -118,6 +164,8 @@
       border-radius: var(--radius);
       padding: .85rem;
       background: linear-gradient(180deg, rgba(16,19,29,.95), rgba(16,19,29,.8));
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(10px);
       max-height: calc(100vh - 1.8rem);
       overflow: auto;
     }
@@ -139,8 +187,24 @@
       cursor: pointer;
       font-weight: 700;
       letter-spacing: .02em;
+      transition: transform .14s ease, border-color .2s ease, background .2s ease;
+      position: relative;
+      overflow: hidden;
     }
+    .menu button::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #f87171, #dc2626);
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .menu button:hover { transform: translateX(2px); border-color: rgba(220,38,38,.35); }
     .menu button.active { border-color: rgba(220,38,38,.6); background: rgba(220,38,38,.16); }
+    .menu button.active::before { opacity: 1; }
 
     .sidebar-actions { display: grid; gap: .45rem; }
     .hint { color: var(--muted); font-size: .82rem; line-height: 1.4; }
@@ -150,7 +214,10 @@
       border-radius: var(--radius);
       padding: 1rem;
       background: linear-gradient(180deg, rgba(16,19,29,.94), rgba(16,19,29,.82));
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(10px);
       min-height: calc(100vh - 1.8rem);
+      min-width: 0;
     }
 
     .topbar {
@@ -160,6 +227,108 @@
       gap: .6rem;
       flex-wrap: wrap;
       margin-bottom: .9rem;
+    }
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      flex-wrap: wrap;
+    }
+    .session-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .26rem .6rem;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    .session-chip strong { color: var(--text); }
+
+    .res-tools {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .65rem;
+      margin-bottom: .65rem;
+      background: rgba(255,255,255,.02);
+      display: grid;
+      grid-template-columns: 1.4fr repeat(2, minmax(140px, 1fr)) auto;
+      gap: .5rem;
+      align-items: center;
+    }
+    .res-tools input,
+    .res-tools select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: .54rem .62rem;
+      outline: none;
+    }
+    .res-tools input:focus,
+    .res-tools select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(220,38,38,.2);
+    }
+
+    .th-sort {
+      all: unset;
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+      text-transform: inherit;
+      letter-spacing: inherit;
+    }
+    .th-sort:hover { color: #d8dfef; }
+    .th-sort .arrow {
+      opacity: .55;
+      font-size: .76rem;
+      line-height: 1;
+    }
+
+    .status-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: .1rem .45rem;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .28rem;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .status-pill.new {
+      color: #c7d2fe;
+      background: rgba(99,102,241,.16);
+      border-color: rgba(99,102,241,.4);
+    }
+    .status-pill.confirmed {
+      color: #bfdbfe;
+      background: rgba(59,130,246,.16);
+      border-color: rgba(59,130,246,.4);
+    }
+    .status-pill.escaped {
+      color: #86efac;
+      background: rgba(16,185,129,.15);
+      border-color: rgba(16,185,129,.4);
+    }
+    .status-pill.failed {
+      color: #fca5a5;
+      background: rgba(239,68,68,.15);
+      border-color: rgba(239,68,68,.38);
+    }
+    .status-pill.cancelled {
+      color: #fcd34d;
+      background: rgba(245,158,11,.15);
+      border-color: rgba(245,158,11,.4);
     }
 
     .stats {
@@ -171,8 +340,14 @@
     .stat {
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: .6rem;
-      background: rgba(255,255,255,.02);
+      padding: .65rem;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+      transition: transform .16s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .stat:hover {
+      transform: translateY(-2px);
+      border-color: rgba(220,38,38,.35);
+      box-shadow: var(--shadow-glow);
     }
     .stat .k { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; }
     .stat .v { margin-top: .2rem; font-size: 1.15rem; font-weight: 800; }
@@ -181,7 +356,8 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: .85rem;
-      background: rgba(255,255,255,.01);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
     }
 
     .view { display: none; }
@@ -216,6 +392,10 @@
       top: 0;
       z-index: 2;
     }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,.015); }
+    tbody tr:hover { background: rgba(220,38,38,.08); }
+    td select,
+    td input[type="checkbox"] { accent-color: #dc2626; }
 
     .pill {
       display: inline-block;
@@ -298,6 +478,23 @@
       font-size: .9rem;
     }
 
+    .sidebar::-webkit-scrollbar,
+    .table-wrap::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    .sidebar::-webkit-scrollbar-thumb,
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(248,113,113,.55), rgba(220,38,38,.55));
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    .sidebar::-webkit-scrollbar-track,
+    .table-wrap::-webkit-scrollbar-track {
+      background: rgba(255,255,255,.03);
+    }
+
     .empty {
       color: var(--muted);
       text-align: center;
@@ -311,6 +508,17 @@
       .sidebar { position: static; max-height: none; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .kpi-grid { grid-template-columns: 1fr; }
+      .res-tools { grid-template-columns: 1fr 1fr; }
+      .res-tools .btn { width: 100%; }
+    }
+    @media (max-width: 620px) {
+      .res-tools { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
@@ -344,14 +552,12 @@
         <div class="menu" id="side-menu">
           <button data-view="view-reservations" class="active">Reservations</button>
           <button data-view="view-manifest">Player Manifest</button>
-          <button data-view="view-waivers">Waiver Tracking</button>
           <button data-view="view-metrics">Escape Rate Metrics</button>
           <button data-view="view-revenue">Revenue Reports</button>
           <button data-view="view-admins">Add / Delete Admins</button>
         </div>
         <div class="sidebar-actions">
           <button class="btn ghost" id="export-pdf-btn" type="button">Export Reservations PDF</button>
-          <button class="btn ghost" id="export-json-btn" type="button">Export JSON</button>
           <button class="btn ghost" id="logout-btn" type="button">Log Out</button>
         </div>
       </aside>
@@ -361,6 +567,9 @@
           <div>
             <div class="eyebrow">Control Center</div>
             <h2 id="view-title">Reservations</h2>
+          </div>
+          <div class="topbar-meta">
+            <div class="session-chip">Signed in as <strong id="session-email">-</strong></div>
           </div>
         </header>
 
@@ -372,6 +581,21 @@
         </section>
 
         <section class="view active" id="view-reservations">
+          <div class="res-tools">
+            <input id="res-search" type="search" placeholder="Search name, email, phone, scenario..." aria-label="Search reservations" />
+            <select id="res-status-filter" aria-label="Filter by status">
+              <option value="all">All statuses</option>
+              <option value="new">New</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="escaped">Escaped</option>
+              <option value="failed">Failed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select id="res-scenario-filter" aria-label="Filter by scenario">
+              <option value="all">All scenarios</option>
+            </select>
+            <button class="btn ghost" id="res-clear-filters" type="button">Clear</button>
+          </div>
           <div class="table-wrap" id="reservations-table-wrap"></div>
         </section>
 
@@ -379,13 +603,6 @@
           <div class="panel">
             <h3 style="margin-bottom:.65rem">Upcoming Player Manifest</h3>
             <ul class="manifest-list" id="manifest-list"></ul>
-          </div>
-        </section>
-
-        <section class="view" id="view-waivers">
-          <div class="panel">
-            <h3 style="margin-bottom:.65rem">Waiver Checklist</h3>
-            <div id="waiver-list"></div>
           </div>
         </section>
 
@@ -441,6 +658,19 @@
       const adminErr = document.getElementById('admin-error');
       const adminListEl = document.getElementById('admin-list');
       const sideMenu = document.getElementById('side-menu');
+      const sessionEmailEl = document.getElementById('session-email');
+      const resSearch = document.getElementById('res-search');
+      const resStatusFilter = document.getElementById('res-status-filter');
+      const resScenarioFilter = document.getElementById('res-scenario-filter');
+      const resClearFilters = document.getElementById('res-clear-filters');
+
+      const reservationState = {
+        query: '',
+        status: 'all',
+        scenario: 'all',
+        sortKey: 'createdAt',
+        sortDir: 'desc'
+      };
 
       function loadJSON(key, fallback) {
         try {
@@ -472,6 +702,9 @@
       function showApp(show) {
         authShell.style.display = show ? 'none' : 'block';
         appShell.style.display = show ? 'block' : 'none';
+        if (show && sessionEmailEl) {
+          sessionEmailEl.textContent = getSession() || '-';
+        }
       }
 
       function escapeHTML(v) {
@@ -513,6 +746,46 @@
 
       function formatMoney(n) { return asNum(n).toFixed(2) + ' TND'; }
 
+      function normalizeText(v) {
+        return String(v || '').toLowerCase().trim();
+      }
+
+      function getSortValue(r, key) {
+        if (key === 'createdAt') return r.createdAt ? new Date(r.createdAt).getTime() || 0 : 0;
+        if (key === 'dateTime') {
+          const d = (r.date || '') + 'T' + (r.time || '00:00');
+          const ts = new Date(d).getTime();
+          return Number.isFinite(ts) ? ts : 0;
+        }
+        if (key === 'players') return asNum(r.players);
+        if (key === 'status') return normalizeText(r.status || 'new');
+        if (key === 'name') return normalizeText(r.name);
+        if (key === 'scenario') return normalizeText(r.scenario);
+        return normalizeText(r[key]);
+      }
+
+      function getStatusClass(status) {
+        const s = normalizeText(status || 'new');
+        return ['new', 'confirmed', 'escaped', 'failed', 'cancelled'].includes(s) ? s : 'new';
+      }
+
+      function renderSortHeader(label, key) {
+        const active = reservationState.sortKey === key;
+        const arrow = active ? (reservationState.sortDir === 'asc' ? '↑' : '↓') : '↕';
+        return '<th><button class="th-sort" type="button" data-sort-key="' + key + '">' + label + '<span class="arrow">' + arrow + '</span></button></th>';
+      }
+
+      function updateScenarioFilterOptions(list) {
+        if (!resScenarioFilter) return;
+        const current = reservationState.scenario;
+        const scenarios = Array.from(new Set(list.map(r => String(r.scenario || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+        const options = ['<option value="all">All scenarios</option>']
+          .concat(scenarios.map(name => '<option value="' + escapeHTML(name) + '">' + escapeHTML(name) + '</option>'));
+        resScenarioFilter.innerHTML = options.join('');
+        resScenarioFilter.value = scenarios.includes(current) || current === 'all' ? current : 'all';
+        reservationState.scenario = resScenarioFilter.value;
+      }
+
       function renderStats() {
         const list = getReservations();
         const upcoming = list.filter(isUpcoming);
@@ -528,14 +801,52 @@
       function renderReservationsView() {
         const wrap = document.getElementById('reservations-table-wrap');
         const list = getReservations();
+        updateScenarioFilterOptions(list);
 
         if (!list.length) {
           wrap.innerHTML = '<div class="empty">No reservations yet.</div>';
           return;
         }
 
-        const rows = list.map((r, idx) => {
+        const query = normalizeText(reservationState.query);
+        const filtered = list
+          .map((r, idx) => ({ r, idx }))
+          .filter(item => {
+            const r = item.r;
+            if (reservationState.status !== 'all' && normalizeText(r.status || 'new') !== reservationState.status) return false;
+            if (reservationState.scenario !== 'all' && String(r.scenario || '').trim() !== reservationState.scenario) return false;
+            if (!query) return true;
+
+            const haystack = [
+              r.id,
+              r.name,
+              r.phone,
+              r.email,
+              r.scenario,
+              r.date,
+              r.time,
+              r.message,
+              r.occasion
+            ].map(normalizeText).join(' ');
+            return haystack.includes(query);
+          })
+          .sort((a, b) => {
+            const av = getSortValue(a.r, reservationState.sortKey);
+            const bv = getSortValue(b.r, reservationState.sortKey);
+            let cmp = 0;
+            if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+            else cmp = String(av).localeCompare(String(bv));
+            return reservationState.sortDir === 'asc' ? cmp : -cmp;
+          });
+
+        if (!filtered.length) {
+          wrap.innerHTML = '<div class="empty">No reservations match your filters.</div>';
+          return;
+        }
+
+        const rows = filtered.map(({ r, idx }) => {
           const created = r.createdAt ? new Date(r.createdAt).toLocaleString() : '-';
+          const statusClass = getStatusClass(r.status || 'new');
           return '<tr>' +
             '<td>' + escapeHTML(r.id || '-') + '</td>' +
             '<td>' + escapeHTML(created) + '</td>' +
@@ -548,7 +859,7 @@
             '<td>' + escapeHTML(r.players) + '</td>' +
             '<td>' + escapeHTML(getSpecialNote(r)) + '</td>' +
             '<td><input type="checkbox" data-waiver-idx="' + idx + '" ' + (r.waiverSigned ? 'checked' : '') + ' /></td>' +
-            '<td><select data-status-idx="' + idx + '">'
+            '<td><span class="status-pill ' + statusClass + '">' + escapeHTML(r.status || 'new') + '</span><br /><select data-status-idx="' + idx + '">' 
               + ['new','confirmed','escaped','failed','cancelled'].map(s => '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + s + '</option>').join('')
               + '</select></td>' +
             '<td><button class="btn danger small" type="button" data-del-res="' + idx + '">Delete</button></td>' +
@@ -559,11 +870,35 @@
           '<div class="table-wrap">'
           + '<table>'
           + '<thead><tr>'
-          + '<th>ID</th><th>Created</th><th>Name</th><th>Phone</th><th>Email</th><th>Scenario</th><th>Date</th><th>Time</th><th>Players</th><th>Special Notes</th><th>Waiver</th><th>Status</th><th>Actions</th>'
+          + '<th>ID</th>'
+          + renderSortHeader('Created', 'createdAt')
+          + renderSortHeader('Name', 'name')
+          + '<th>Phone</th><th>Email</th>'
+          + renderSortHeader('Scenario', 'scenario')
+          + renderSortHeader('Date', 'dateTime')
+          + '<th>Time</th>'
+          + renderSortHeader('Players', 'players')
+          + '<th>Special Notes</th><th>Waiver</th>'
+          + renderSortHeader('Status', 'status')
+          + '<th>Actions</th>'
           + '</tr></thead>'
           + '<tbody>' + rows + '</tbody>'
           + '</table>'
           + '</div>';
+
+        wrap.querySelectorAll('[data-sort-key]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-sort-key');
+            if (!key) return;
+            if (reservationState.sortKey === key) {
+              reservationState.sortDir = reservationState.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+              reservationState.sortKey = key;
+              reservationState.sortDir = key === 'name' || key === 'scenario' || key === 'status' ? 'asc' : 'desc';
+            }
+            renderReservationsView();
+          });
+        });
 
         wrap.querySelectorAll('[data-del-res]').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -613,34 +948,6 @@
           + '<div class="manifest-meta">Special notes: ' + escapeHTML(getSpecialNote(r)) + '</div>'
           + '</li>'
         ).join('');
-      }
-
-      function renderWaiverView() {
-        const root = document.getElementById('waiver-list');
-        const list = getReservations().filter(isUpcoming);
-
-        if (!list.length) {
-          root.innerHTML = '<div class="empty">No upcoming bookings for waiver tracking.</div>';
-          return;
-        }
-
-        root.innerHTML = list.map(r =>
-          '<div class="waiver-row">'
-          + '<div><strong>' + escapeHTML(r.name || '-') + '</strong><div class="hint">' + escapeHTML(r.date || '-') + ' ' + escapeHTML(r.time || '-') + ' | ' + escapeHTML(r.scenario || '-') + '</div></div>'
-          + '<label><input type="checkbox" data-waiver-id="' + escapeHTML(r.id || '') + '" ' + (r.waiverSigned ? 'checked' : '') + ' /> Signed</label>'
-          + '</div>'
-        ).join('');
-
-        root.querySelectorAll('[data-waiver-id]').forEach(chk => {
-          chk.addEventListener('change', () => {
-            const id = chk.getAttribute('data-waiver-id');
-            const all = getReservations();
-            const target = all.find(x => String(x.id) === String(id));
-            if (target) target.waiverSigned = !!chk.checked;
-            saveReservations(all);
-            refreshAll();
-          });
-        });
       }
 
       function renderMetricsView() {
@@ -767,7 +1074,6 @@
         renderStats();
         renderReservationsView();
         renderManifestView();
-        renderWaiverView();
         renderMetricsView();
         renderRevenueView();
         renderAdmins();
@@ -779,7 +1085,6 @@
         const titleMap = {
           'view-reservations': 'Reservations',
           'view-manifest': 'Player Manifest',
-          'view-waivers': 'Waiver Tracking',
           'view-metrics': 'Escape Rate Metrics',
           'view-revenue': 'Revenue Reports',
           'view-admins': 'Admin Management'
@@ -790,6 +1095,40 @@
 
       function tryLogin(email, password) {
         return getAdmins().some(a => a.email.toLowerCase() === String(email).toLowerCase() && a.password === password);
+      }
+
+      function setupReservationTools() {
+        if (resSearch) {
+          resSearch.addEventListener('input', () => {
+            reservationState.query = resSearch.value || '';
+            renderReservationsView();
+          });
+        }
+        if (resStatusFilter) {
+          resStatusFilter.addEventListener('change', () => {
+            reservationState.status = resStatusFilter.value || 'all';
+            renderReservationsView();
+          });
+        }
+        if (resScenarioFilter) {
+          resScenarioFilter.addEventListener('change', () => {
+            reservationState.scenario = resScenarioFilter.value || 'all';
+            renderReservationsView();
+          });
+        }
+        if (resClearFilters) {
+          resClearFilters.addEventListener('click', () => {
+            reservationState.query = '';
+            reservationState.status = 'all';
+            reservationState.scenario = 'all';
+            reservationState.sortKey = 'createdAt';
+            reservationState.sortDir = 'desc';
+            if (resSearch) resSearch.value = '';
+            if (resStatusFilter) resStatusFilter.value = 'all';
+            if (resScenarioFilter) resScenarioFilter.value = 'all';
+            renderReservationsView();
+          });
+        }
       }
 
       function exportPdfReservations() {
@@ -900,6 +1239,7 @@
       }
 
       ensureSeedAdmin();
+      setupReservationTools();
 
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -952,18 +1292,6 @@
       document.getElementById('logout-btn').addEventListener('click', () => {
         clearSession();
         showApp(false);
-      });
-
-      document.getElementById('export-json-btn').addEventListener('click', () => {
-        const blob = new Blob([JSON.stringify(getReservations(), null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'reservations.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
       });
 
       document.getElementById('export-pdf-btn').addEventListener('click', exportPdfReservations);

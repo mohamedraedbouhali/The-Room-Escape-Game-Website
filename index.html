@@ -1499,7 +1499,10 @@
   <!-- Hero -->
   <div class="home-hero flashlight-zone" id="hero-flashlight">
     <div class="hero-media" aria-hidden="true">
-      <img src="img/scary.png" alt="" />
+      <picture>
+        <source media="(max-width: 759px)" srcset="img/ss.png" />
+        <img src="img/scary.png" alt="" />
+      </picture>
     </div>
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
@@ -2349,7 +2352,7 @@
           <div class="step-actions">
             <button class="btn btn-outline" id="booking-step-back" type="button">Retour</button>
             <button class="btn btn-primary" id="booking-step-next" type="button">Continuer</button>
-            <button class="btn btn-primary" id="booking-step-submit" type="submit" style="display:none;">Confirmer la réservation</button>
+            <button class="btn btn-primary" id="booking-step-submit" type="submit" hidden>Confirmer la réservation</button>
           </div>
         </div>
       </form>
